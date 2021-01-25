@@ -1,0 +1,23 @@
+apply plugin: 'java'
+
+version = '1.0'
+
+repositories {
+   // google()
+    jcenter()
+    mavenCentral()
+  //  mavenLocal()
+  /*  maven {
+        url "https://maven.google.com"
+    }*/
+}
+
+eclipse.classpath.containers 'org.eclipse.jdt.junit.JUNIT_CONTAINER/4'
+
+dependencies {
+	implementation fileTree(include: ['*.jar'], dir: 'lib')
+	//implementation 'org.familysearch.gedcom:gedcom:1.11.0'
+	implementation 'commons-io:commons-io:2.6'
+	implementation 'com.google.code.gson:gson:2.8.6'
+	implementation 'joda-time:joda-time:2.10.6' 
+}

@@ -1,0 +1,23 @@
+﻿0 HEAD
+1 GEDC
+2 VERS 5.5.1
+2 FORM Lineage-Linked
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Tizio /Fontato/
+1 SEX M
+1 SOUR @S1@
+2 DATA
+3 DATE 12 feb 1900
+3 TEXT Text from source
+4 CONT Second line of text from source
+0 @S1@ SOUR
+1 DATA
+2 EVEN BIRT, DEAT, MARR
+3 DATE FROM Jan 1820 TO DEC 1825
+3 PLAC Madison, Connecticut
+2 AGNC Madison County Court, State of Connecticut
+2 NOTE Note to source data
+3 CONT on multiple lines
+1 TITL Madison County Birth, Death, and Marriage Records
+0 TRLR
