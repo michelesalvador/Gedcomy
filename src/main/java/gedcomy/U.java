@@ -104,7 +104,7 @@ public class U {
 		for( EventFact unFatto : p.getEventsFacts() ) {
 			if( unFatto.getTag() != null && unFatto.getTag().equals("BIRT") && unFatto.getDate() != null ) {
 				inizio = new Datatore( unFatto.getDate() );
-				anni = inizio.scriviAnno();
+				anni = inizio.writeDate(true);
 				break;
 			}
 		}
@@ -113,17 +113,17 @@ public class U {
 				fine = new Datatore( unFatto.getDate() );
 				if( !anni.isEmpty() )
 					anni += " – ";
-				anni += fine.scriviAnno();
+				anni += fine.writeDate(true);
 				break;
 			}
 		}
 		// Aggiunge l'età tra parentesi
-		if( conEta && inizio != null && inizio.tipo <= 3 ) {
+		if( conEta && inizio != null && inizio.isSingleKind() ) { // tipi di date puntiformi
 			LocalDate dataInizio = new LocalDate( inizio.data1.date ); // converte in joda time
 			// Se è ancora vivo la fine è adesso
 			if( fine == null && dataInizio.isBefore(LocalDate.now()) && Years.yearsBetween(dataInizio,LocalDate.now()).getYears() < 120 && !U.morto(p) )
 				fine = new Datatore( String.format(Locale.ENGLISH,"%te %<Tb %<tY",new Date()) ); // un po' assurdo dover qui passare per Datatore...			
-			if( fine != null && fine.tipo <= 3 ) { // tipi di date puntiformi
+			if( fine != null && fine.isSingleKind() ) {
 				LocalDate dataFine = new LocalDate( fine.data1.date );
 				String misura = "";
 				int eta = Years.yearsBetween( dataInizio, dataFine ).getYears();

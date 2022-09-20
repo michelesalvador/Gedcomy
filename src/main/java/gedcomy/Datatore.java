@@ -9,24 +9,18 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
+import gedcomy.constants.Format;
+import gedcomy.constants.Kind;
 
 public class Datatore {
 
 	Data data1;
 	Data data2;
 	String frase; // Quella che andrà tra parentesi
-	int tipo; // da 0 a 10
-	String[] paterni = { "d MMM yyy", "d M yyy", "MMM yyy", "M yyy", "d MMM", "yyy" };
-	String G_M_A = paterni[0];
-	String G_m_A = paterni[1];
-	String M_A = paterni[2];
-	String m_A = paterni[3];
-	String G_M = paterni[4];
-	String A = paterni[5];
+	Kind kind;
 	static String[] mesiGedcom = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
-	static String[] prefissi = { "", "ABT", "CAL", "EST", "AFT", "BEF", "BET", "FROM", "TO", "FROM", "(" }; // Todo "INT"
 	static String[] suffissi = { "B.C.", "BC", "BCE" };
-	
+
 	public Datatore( String dataGc ) {
 		data1 = new Data();
 		data2 = new Data();
@@ -77,7 +71,7 @@ public class Datatore {
 					doppia = true;
 			}
 			
-			for( String forma : paterni ) {
+			for( String forma : Format.PATTERNS ) {
 				format.applyPattern( forma );
 				try {
 					date = format.parse( dataGc );
@@ -87,10 +81,10 @@ public class Datatore {
 					//s.l( "'"+ format.toPattern() + "' " + e.getLocalizedMessage() );
 				}
 			}
-			if( format.toPattern().equals(G_m_A) )
-				format.applyPattern( G_M_A );
-			if( format.toPattern().equals(m_A) )
-				format.applyPattern( M_A );
+			if( isFormat(Format.D_m_Y) )
+				format.applyPattern( Format.D_M_Y );
+			if( isFormat(Format.m_Y) )
+				format.applyPattern( Format.M_Y );
 			
 			// Rende la data effettivamente negativa
 			if( negativa ) cambiaEra();
@@ -111,7 +105,7 @@ public class Datatore {
 				//date.setTime( milli );
 				
 				// La data viene riparsata cambiandogli l'era
-				SimpleDateFormat sdf = new SimpleDateFormat(G_M_A + " G", Locale.US);
+				SimpleDateFormat sdf = new SimpleDateFormat(Format.D_M_Y + " G", Locale.US);
 				//sdf.setTimeZone( TimeZone.getTimeZone("UTC") );
 				String data = sdf.format(date);
 				if( negativa ) // AD -> BC
@@ -124,6 +118,10 @@ public class Datatore {
 					e.printStackTrace();
 				}
 			}
+		}
+
+		boolean isFormat(String format) {
+			return this.format.toPattern().equals(format);
 		}
 
 		@Override
@@ -144,84 +142,167 @@ public class Datatore {
 	}
 	
 	// Riconosce il tipo di data e crea la classe Data
-	public void analizza( String dataGc ) {
+	public void analizza(String dataGc) {
 
 		dataGc = dataGc.trim();
+		if( dataGc.isEmpty() ) {
+			kind = Kind.EXACT;
+			return;
+		}
+		// Riconosce i tipi diversi da EXACT e converte la stringa in Data
 		String dataGcMaiusc = dataGc.toUpperCase();
-		
-		// Riconosce i tipi diversi da 0 e converte la stringa in Data
-		for( int t = 1; t < prefissi.length; t++  ) {
-			if( dataGcMaiusc.startsWith(prefissi[t]) ) {
-				tipo = t;
-				if( t == 6 && dataGcMaiusc.contains("AND") ) { // BET... AND
+		for( int i = Kind.APPROXIMATE.ordinal(); i < Kind.values().length; i++ ) {
+			Kind k = Kind.values()[i];
+			if( dataGcMaiusc.startsWith(k.prefix) ) {
+				kind = k;
+				if( k == Kind.BETWEEN_AND && dataGcMaiusc.contains("AND") ) {
 					//s.l( dataGcMaiusc.indexOf("BET") +" "+ dataGcMaiusc.indexOf("AND") );
-					if( dataGcMaiusc.indexOf("AND") > dataGcMaiusc.indexOf("BET")+4 )
-						data1.scanna( dataGcMaiusc.substring( 4, dataGcMaiusc.indexOf("AND")-1 ));
-					if( dataGcMaiusc.length() > dataGcMaiusc.indexOf("AND")+3 )
-						data2.scanna( dataGcMaiusc.substring( dataGcMaiusc.indexOf("AND")+4 ));
-				} else if( t == 7 && dataGcMaiusc.contains("TO") ) { // FROM... TO
-					tipo = 9;
-					if( dataGcMaiusc.indexOf("TO") > dataGcMaiusc.indexOf("FROM")+5 )
-						data1.scanna( dataGcMaiusc.substring( 5, dataGcMaiusc.indexOf("TO")-1 ));
-					if( dataGcMaiusc.length() > dataGcMaiusc.indexOf("TO")+2 )
-						data2.scanna( dataGcMaiusc.substring( dataGcMaiusc.indexOf("TO")+3 ) );
-				} else if( t == 10 ) { // Data frase tra parentesi
-					//data1.scanna( dataGc.substring( 1, dataGc.indexOf(")") ) ); // Ripristina date del tipo 0 messe tra parentesi
+					if( dataGcMaiusc.indexOf("AND") > dataGcMaiusc.indexOf("BET") + 4 )
+						data1.scanna(dataGcMaiusc.substring(4, dataGcMaiusc.indexOf("AND") - 1));
+					if( dataGcMaiusc.length() > dataGcMaiusc.indexOf("AND") + 3 )
+						data2.scanna(dataGcMaiusc.substring(dataGcMaiusc.indexOf("AND") + 4));
+				} else if( k == Kind.FROM && dataGcMaiusc.contains("TO") ) {
+					kind = Kind.FROM_TO;
+					if( dataGcMaiusc.indexOf("TO") > dataGcMaiusc.indexOf("FROM") + 5 )
+						data1.scanna(dataGcMaiusc.substring(5, dataGcMaiusc.indexOf("TO") - 1));
+					if( dataGcMaiusc.length() > dataGcMaiusc.indexOf("TO") + 2 )
+						data2.scanna(dataGcMaiusc.substring(dataGcMaiusc.indexOf("TO") + 3));
+				} else if( k == Kind.PHRASE ) { // Phrase date between parenthesis
+					// data1.scanna( dataGc.substring( 1, dataGc.indexOf(")") ) ); // Ripristina date del tipo 0 messe tra parentesi
 					if( dataGc.endsWith(")") )
-						frase = dataGc.substring( 1, dataGc.indexOf(")") );
+						frase = dataGc.substring(1, dataGc.indexOf(")"));
 					else
 						frase = dataGc;
-				} else if( dataGcMaiusc.length() > prefissi[t].length() ) // Altri prefissi seguiti da qualcosa
-					data1.scanna( dataGcMaiusc.substring( prefissi[t].length() + 1 ) );
+				} else if( dataGcMaiusc.length() > k.prefix.length() ) // Altri prefissi seguiti da qualcosa
+					data1.scanna(dataGcMaiusc.substring(k.prefix.length() + 1));
 				/*else // Prefisso da solo
 					data1.scanna( "" );*/
 				break;
 			}
 		}
-		// Rimane da provare il tipo 0, altrimenti diventa una frase
-		if( tipo == 0 && !dataGc.isEmpty() ) {
-			data1.scanna( dataGc );
-			if( data1.date == null ) {
+		// Rimane da provare il kind EXACT, altrimenti diventa una frase
+		if( kind == null ) {
+			data1.scanna(dataGc);
+			if( data1.date != null ) {
+				kind = Kind.EXACT;
+			} else {
 				frase = dataGc;
-				tipo = 10;
+				kind = Kind.PHRASE;
 			}
 		}
 	}
 	
-
-	// Scrive solo l'anno semplificato alla mia maniera
-	public String scriviAnno() {
-		String anno = "";
-		if( data1.date != null && !data1.format.toPattern().equals(G_M) ) {
-			DateFormat formatoAnno = new SimpleDateFormat("yyy");
-			Date dateUnoCopy = (Date) data1.date.clone(); // Clona 'date' per poter cambiare l'anno
+	/** Write the short date, adorned with some modifiers
+	 * @param yearOnly The year only or the whole date with 3-chars month
+	 * @return The date well written
+	 */
+	public String writeDate(boolean yearOnly) {
+		String text = "";
+		if( data1.date != null && !(data1.isFormat(Format.D_M) && yearOnly) ) {
+			Locale locale = Locale.getDefault();
+			DateFormat dateFormat = new SimpleDateFormat(yearOnly ? Format.Y : data1.format.toPattern(), locale);
+			Date dateOne = (Date)data1.date.clone(); // Cloned so the year of a double date can be modified without consequences
 			if( data1.doppia )
-				dateUnoCopy.setYear( data1.date.getYear() + 1 );
-			anno = formatoAnno.format( dateUnoCopy );
+				dateOne.setYear(data1.date.getYear() + 1);
+			text = dateFormat.format(dateOne);
 			if( data1.negativa )
-				anno = "-"+anno;
-			if( tipo >= 1 && tipo <= 3 )
-				anno += "?";
-			if( tipo == 4 || tipo == 7 )
-				anno += "→";
-			if( tipo == 5 )
-				anno = "←"+anno;
-			if( tipo == 8 )
-				anno = "→"+anno;
-			if( (tipo == 6 || tipo == 9) && data2.date != null && !data2.format.toPattern().equals(G_M) ) {
+				text = "-" + text;
+			if( kind == Kind.APPROXIMATE || kind == Kind.CALCULATED || kind == Kind.ESTIMATED )
+				text += "?";
+			else if( kind == Kind.AFTER || kind == Kind.FROM )
+				text += "→";
+			else if( kind == Kind.BEFORE )
+				text = "←" + text;
+			else if( kind == Kind.TO )
+				text = "→" + text;
+			else if( (kind == Kind.BETWEEN_AND || kind == Kind.FROM_TO) && data2.date != null ) {
+				Date dateTwo = (Date)data2.date.clone();
 				if( data2.doppia )
-					data2.date.setYear( data2.date.getYear() + 1 );
-				String anno2 = formatoAnno.format( data2.date );
+					dateTwo.setYear(data2.date.getYear() + 1);
+				dateFormat = new SimpleDateFormat(yearOnly ? Format.Y : data2.format.toPattern(), locale);
+				String second = dateFormat.format(dateTwo);
 				if( data2.negativa )
-					anno2 = "-"+anno2;					
-				if( !anno.equals(anno2) ) {
-					if( !anno2.startsWith("-") && anno2.length() > 3
-							&& anno2.substring(0,2).equals(anno.substring(0,2)) ) // se sono dello stesso secolo
-						anno2 = anno2.substring( anno2.length()-2 ); // prende solo gli anni
-					anno += (tipo==6 ? "~" : "→") + anno2;
+					second = "-" + second;
+				if( !second.equals(text) ) {
+					if( !data1.negativa && !data2.negativa ) {
+						if( !yearOnly && data1.isFormat(Format.D_M_Y) && data1.format.equals(data2.format)
+								&& dateOne.getMonth() == dateTwo.getMonth() && dateOne.getYear() == dateTwo.getYear() ) { // Same month and year
+							text = text.substring(0, text.indexOf(' '));
+						} else if( !yearOnly && data1.isFormat(Format.D_M_Y) && data1.format.equals(data2.format)
+								&& dateOne.getYear() == dateTwo.getYear() ) { // Same year
+							text = text.substring(0, text.lastIndexOf(' '));
+						} else if( !yearOnly && data1.isFormat(Format.M_Y) && data1.format.equals(data2.format)
+								&& dateOne.getYear() == dateTwo.getYear() ) { // Same year
+							text = text.substring(0, text.indexOf(' '));
+						} else if( (yearOnly || (data1.isFormat(Format.Y) && data1.format.equals(data2.format))) // Two years only
+								&& ((text.length() == 4 && second.length() == 4 && text.substring(0, 2).equals(second.substring(0, 2))) // of the same century
+								 || (text.length() == 3 && second.length() == 3 && text.substring(0, 1).equals(second.substring(0, 1)))) ) {
+							second = second.substring(second.length() - 2); // Keeps the last two digits
+						}
+					}
+					text += (kind == Kind.BETWEEN_AND ? "~" : "→") + second;
 				}
 			}
 		}
-		return anno;
+		return text;
+	}
+
+	R R = new R();
+	String getString(int id) {
+		return R.texts[id];
+	}
+
+	// Plain text of the date in local language
+	public String writeDateLong() {
+		String txt = "";
+		int pre = 0;
+		switch( kind ) {
+			case APPROXIMATE: pre = R.string.approximate; break;
+			case CALCULATED: pre = R.string.calculated; break;
+			case ESTIMATED: pre = R.string.estimated; break;
+			case AFTER: pre = R.string.after; break;
+			case BEFORE: pre = R.string.before; break;
+			case BETWEEN_AND: pre = R.string.between; break;
+			case FROM:
+			case FROM_TO: pre = R.string.from; break;
+			case TO: pre = R.string.to;
+		}
+		if( pre > 0 )
+			txt = getString(pre) + " ";
+		if( data1.date != null ) {
+			Locale locale = Locale.getDefault();
+			DateFormat dateFormat = new SimpleDateFormat(data1.format.toPattern().replace("MMM","MMMM"), locale);
+			txt += dateFormat.format(data1.date);
+			// Uppercase initial
+			if( kind == Kind.EXACT && data1.isFormat(Format.M_Y) )
+				txt = txt.substring(0, 1).toUpperCase() + txt.substring(1);
+			if( data1.doppia ) {
+				String year2 = String.valueOf(data1.date.getYear() + 1901);
+				txt += "/" + year2.substring(year2.length() - 2);
+			}
+			if( data1.negativa )
+				txt += " B.C.";
+			if( kind == Kind.BETWEEN_AND || kind == Kind.FROM_TO ) {
+				txt += " " + getString(kind == Kind.BETWEEN_AND ? R.string.and : R.string.to).toLowerCase();
+				if( data2.date != null ) {
+					dateFormat = new SimpleDateFormat(data2.format.toPattern().replace("MMM", "MMMM"), locale);
+					txt += " " + dateFormat.format(data2.date);
+					if( data2.doppia ) {
+						String year2 = String.valueOf(data2.date.getYear() + 1901);
+						txt += "/" + year2.substring(year2.length() - 2);
+					}
+					if( data2.negativa )
+						txt += " B.C.";
+				}
+			}
+		} else if( frase != null ) {
+			txt = frase;
+		}
+		return txt;
+	}
+
+	// Kinds of date that represent a single event in time
+	boolean isSingleKind() {
+		return kind == Kind.EXACT || kind == Kind.APPROXIMATE || kind == Kind.CALCULATED || kind == Kind.ESTIMATED;
 	}
 }

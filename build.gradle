@@ -16,8 +16,8 @@ eclipse.classpath.containers 'org.eclipse.jdt.junit.JUNIT_CONTAINER/4'
 
 dependencies {
 	implementation fileTree(include: ['*.jar'], dir: 'lib')
-	//implementation 'org.familysearch.gedcom:gedcom:1.11.0'
-	implementation 'commons-io:commons-io:2.6'
-	implementation 'com.google.code.gson:gson:2.8.6'
-	implementation 'joda-time:joda-time:2.10.6' 
+	//implementation 'org.familysearch.gedcom:gedcom:1.13.0'
+	implementation 'commons-io:commons-io:2.11.0'
+	implementation 'com.google.code.gson:gson:2.8.7'
+	implementation 'joda-time:joda-time:2.10.10'
 }

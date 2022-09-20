@@ -1,7 +1,6 @@
 package gedcomy;
 
 import static org.junit.Assert.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -21,14 +20,18 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ArrayList;
 import java.util.Calendar;
-import org.folg.gedcom.model.DataEvent;
+//import org.folg.gedcom.model.DataEvent;
 import org.folg.gedcom.model.Gedcom;
 import org.folg.gedcom.model.Note;
 import org.folg.gedcom.model.Person;
 import org.folg.gedcom.model.Source;
 import org.folg.gedcom.model.SourceCitation;
 import org.folg.gedcom.model.SourceCitation.DataTagContents;
-import org.folg.gedcom.model.SourceData;
+//import org.folg.gedcom.model.SourceData;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Duration;
+import org.joda.time.PeriodType;
 import org.junit.Test;
 import org.xml.sax.SAXParseException;
 
@@ -40,7 +43,6 @@ public class GedcomyTest {
 		//utilDate();
 		testaDate();
 		//java8Time();
-		
 	}
 
 	void java8Time() {
@@ -115,9 +117,10 @@ public class GedcomyTest {
 		// Date varie da comprendere
 		String[] dateGc = {
 			"", " 1986 ", "MAr 78 ", " abt  29 feb 2000 ", "7 AUG", " APR  ", 
-			"BEF", "  Bet 29 feb 005 and 5 may 123 ", "BET 22 JAN 1872 AND 31 JUL 1872",
-			"BET 13 NOV 1333", "BET 22 FEB 1500 AND", "BET 1 AUG 2005 AND quaquaqua",
-			"from 34/1234", "FROM 1111 TO", "   FROM 1001 to 1001  ", "to 15 1544", "FROM 33 DEC 1099 TO -2 may 1203",
+			"BEF", "  Bet 29 feb 005 and 5 may 123 ", "BET 13 NOV 1333", "BET 22 FEB 1500 AND", "BET 1 AUG 2005 AND quaquaqua",
+			"bet 800 and 15 may 805", "bet 1701/02 and 1756/1757", "BET jun 2000 and 19.1999", "BET 7 AUG 1974 AND 31 DEC 1974", "BET 11 12 1975 and 25 12 1975",
+			"Bet 1550 bc and 1510 B.C.", "BET 1 AUG 200 BC AND 23 AUG 200 BC", "bet 2000 bc and 2000", "BET 500 and 5010",
+			"from 34/1234", "FROM 1111 TO", "   FROM 1001 to 1001  ", "to 15 1544", "FROM 33 DEC 1099 TO -2 jan 1101",
 			"AFT cippirimerlo...", "(JAn 1458)", "BE 7 Jan 1913", "(solo una parentesi", "  (  Vera frase ) ",
 			"15/05/1970", "12/1713", "14\"4.1970",
 			"3 feb 1715/16", "jan 1699/00 ", "12 1440/41", "from DEC 1699/700 to 15 mar 1752/", "jan 11/3", "4 mar 05/06", "TOAUG 1595/96",
@@ -158,19 +161,18 @@ public class GedcomyTest {
 		
 		Source source = gc.getSource("S1");
 		assertNotNull(source);
-		SourceData data = source.getSourceData();
+	/*	SourceData data = source.getSourceData();
 		assertNotNull(data);
-		assertEquals(data.getAgency(), "Madison County Court, State of Connecticut");
+		assertEquals(data.getAgency(), "Madison County Court, State of Connecticut");*/
 		/*DataEvent event = data.getDataEvents(); TODO da mettere a posto con la lista dei Data Event
 		assertNotNull(event);
 		assertEquals(event.getValue(), "BIRT, DEAT, MARR");
 		assertEquals(event.getPlace(), "Madison, Connecticut");
 		assertEquals(event.getDate(), "FROM Jan 1820 TO DEC 1825");*/
-		Note nota = data.getNotes().get(0);
+	/*	Note nota = data.getNotes().get(0);
 		assertNotNull(nota);
 		assertEquals(nota.getValue(), "Note to source data\n" + "on multiple lines");
 		
-		s.l( data.getExtensions());
+		s.l( data.getExtensions());*/
 	}
-
 }

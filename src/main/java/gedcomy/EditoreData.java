@@ -3,6 +3,7 @@ package gedcomy;
 import java.util.Date;
 import java.util.Locale;
 import gedcomy.Datatore.Data;
+import gedcomy.constants.Kind;
 
 class EditoreData {
 	
@@ -35,19 +36,19 @@ class EditoreData {
 	// Ricostruzione della stringa
 	void genera() {
 		String rifatta;
-		if( datatore.tipo == 0 ) {
-			rifatta = rifai( data1 );
-		} else if( datatore.tipo == 6 )
-			rifatta = "BET " + rifai( data1 ) + " AND " + rifai( data2 );
-		else if( datatore.tipo == 9 )
-			rifatta = "FROM " + rifai( data1 ) + " TO " + rifai( data2 );
-		else if( datatore.tipo == 10 )
+		if( datatore.kind == Kind.EXACT ) {
+			rifatta = rifai(data1);
+		} else if( datatore.kind == Kind.BETWEEN_AND )
+			rifatta = "BET " + rifai(data1) + " AND " + rifai(data2);
+		else if( datatore.kind == Kind.FROM_TO )
+			rifatta = "FROM " + rifai(data1) + " TO " + rifai(data2);
+		else if( datatore.kind == Kind.PHRASE )
 			//rifatta = datatore.frase;
 			rifatta = "(" + datatore.frase + ")"; // mette le parentesi intorno a una data-frase
 		else
-			rifatta = Datatore.prefissi[datatore.tipo] + " " + rifai( data1 );
+			rifatta = datatore.kind.prefix + " " + rifai(data1);
 
-		s.p( datatore.tipo +": " );
+		s.p( datatore.kind +": " );
 		if( data1 != null && data1.date != null )
 			s.p( data1.date.getDate() + " " + Datatore.mesiGedcom[data1.date.getMonth()] + " " + (data1.date.getYear()+1900) + (data1.negativa?" n.":"") + (data1.doppia?" d.":"") );
 		else
@@ -56,7 +57,8 @@ class EditoreData {
 			s.l( " - " + data2.date.getDate() + " " + Datatore.mesiGedcom[data2.date.getMonth()] + " " + (data2.date.getYear()+1900) + (data2.negativa?" n.":"") + (data2.doppia?" d.":"") );
 		else
 			s.l( " - null");
-		s.l( "<" + rifatta + "> <" + datatore.scriviAnno() + ">" );
+		s.l("<" + rifatta + "> <" + datatore.writeDate(true) + "> <" + datatore.writeDate(false) + ">");
+		s.l("<" + datatore.writeDateLong() + ">");
 		//s.l( "[" + data1.format.toPattern() +"]  ["+ data2.format.toPattern() +"]" );
 		
 		/* Calendario per sapere il numero di giorni in un mese
