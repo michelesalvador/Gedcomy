@@ -1,0 +1,40 @@
+0 HEAD
+1 GEDC
+2 VERS 5.5
+2 FORM LINEAGE-LINKED
+1 CHAR ANSI
+0 @I1@ INDI
+1 NAME Padre //
+1 SEX M
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME Mother //
+1 SEX F
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Figlio /Basic/
+1 SEX M
+1 FAMC @F1@
+0 @I4@ INDI
+1 NAME Figlio /Di Sangue/
+1 SEX M
+1 FAMC @F1@
+2 PEDI birth
+0 @I5@ INDI
+1 NAME Figlia /Adottiva/
+1 SEX F
+1 FAMC @F1@
+2 PEDI adopted
+0 @I6@ INDI
+1 NAME Figlioccia /Foster/
+1 SEX F
+1 FAMC @F1@
+2 PEDI foster
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 CHIL @I4@
+1 CHIL @I5@
+1 CHIL @I6@
+0 TRLR

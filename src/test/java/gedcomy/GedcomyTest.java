@@ -3,6 +3,7 @@ package gedcomy;
 import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -20,13 +21,19 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import org.folg.gedcom.model.ChildRef;
+import org.folg.gedcom.model.Family;
 //import org.folg.gedcom.model.DataEvent;
 import org.folg.gedcom.model.Gedcom;
 import org.folg.gedcom.model.Note;
+import org.folg.gedcom.model.ParentFamilyRef;
+import org.folg.gedcom.model.ParentRelationship;
 import org.folg.gedcom.model.Person;
 import org.folg.gedcom.model.Source;
 import org.folg.gedcom.model.SourceCitation;
 import org.folg.gedcom.model.SourceCitation.DataTagContents;
+import org.folg.gedcom.parser.ModelParser;
 //import org.folg.gedcom.model.SourceData;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -39,10 +46,48 @@ public class GedcomyTest {
 	
 	@Test
 	public void test() throws Exception {
-		//apriGedcom();
+		pedigree();
+		//sourceData();
 		//utilDate();
-		testaDate();
+		//testaDate();
 		//java8Time();
+	}
+
+	private void pedigree() {
+		Gedcom gedcom = open("pedigree.ged");
+		Family family = gedcom.getFamily("F1");
+
+		/* FatherRelationship e MotherRelationship corrispondono ai tag non standard _FREL e _MREL
+		for(ChildRef childRef: family.getChildRefs()) {
+			ParentRelationship parentRelationship = new ParentRelationship();
+			parentRelationship.setValue("???");
+			childRef.setFatherRelationship(parentRelationship);
+			childRef.setMotherRelationship(parentRelationship);
+			s.l(childRef.getFatherRelationship().getValue(), childRef.getMotherRelationship().getValue());
+		}*/
+
+		// Relationship type
+		for( Person child : family.getChildren(gedcom) ) {
+			for( ParentFamilyRef parentFamilyRef : child.getParentFamilyRefs() ) {
+				parentFamilyRef.getRef();
+				s.l(parentFamilyRef.getRelationshipType());
+			}
+		}
+	}
+
+	private Gedcom open(String fileName) {
+		try {
+			URL url = ClassLoader.getSystemResource(fileName);
+			String path = URLDecoder.decode(url.getFile(), "UTF-8"); // per sostituire i %20 con normali spazi
+			File gedcomFile = new File(path);
+			ModelParser modelParser = new ModelParser();
+			Gedcom gedcom = modelParser.parseGedcom(gedcomFile);
+			gedcom.createIndexes();
+			return gedcom;
+		} catch( Exception e ) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	void java8Time() {
@@ -64,7 +109,6 @@ public class GedcomyTest {
 		String expectedDate = new GregorianCalendar(2018, 0, 0).toZonedDateTime()
 			      .format( DateTimeFormatter.ofPattern("d MMM uuuu") );
 		s.l("28 Jul 2018  " + expectedDate  );
-
 	}
 	
 	void utilDate() throws Exception {
@@ -132,7 +176,7 @@ public class GedcomyTest {
 			new EditoreData( dataGc );
 	}
 
-	void apriGedcom() throws SAXParseException, IOException, URISyntaxException {
+	void sourceData() throws SAXParseException, IOException, URISyntaxException {
 		Gedcomy gedcomy = new Gedcomy();
 	   // URL gedcomUrl = getClass().getClassLoader().getResource("Source DATA.ged");
 		//System.out.println( getClass().getResource(".").getPath()); 
